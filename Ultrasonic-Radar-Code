@@ -1,0 +1,79 @@
+//Ultrasonic Sensor Radar Project
+//Govind Chodha
+
+//Add SR04 and Servo libraries
+#include <Servo.h>
+#include <SR04.h>
+
+//Variables
+//Sensor
+int trigPin = 6;
+int echoPin = 5;
+long objDistance;
+
+//lights
+int redLightPin = 4;
+int greenLightPin = 2;
+
+//create objects for sensor and servo
+SR04 sensor = SR04(echoPin, trigPin);
+Servo servo;
+
+//function for object detection
+void objDetect(){
+  objDistance = sensor.Distance();
+
+  //print on serial monitor
+  Serial.print("Distance: ");
+  Serial.print(objDistance);
+  Serial.println(" cm");
+  //if object is within 13cm of sensor, redlight on, otherwise, green light on
+  if(objDistance > 0 &&  objDistance <= 15){
+    digitalWrite(redLightPin, HIGH);
+    digitalWrite(greenLightPin, LOW);
+  } else {
+    digitalWrite(redLightPin, LOW);
+    digitalWrite(greenLightPin, HIGH);
+  }
+}
+
+//create function for servo movement
+void servoMovement(){
+  // 0 -> 180 smoothly
+  for(int angle = 0; angle <= 180; angle++){
+    servo.write(angle);
+    objDetect();
+    delay(1);
+  }
+
+  //180 -> 0 smoothly
+  for(int angle = 180; angle >= 0; angle--){
+    servo.write(angle);
+    objDetect();
+    delay(1);
+  }
+  
+}
+
+void setup() {
+  //set servo pin to 9 and send to initial position
+  servo.attach(9);
+  servo.write(0);
+
+  //testing
+  Serial.begin(9600);
+  delay(1000);
+
+  //light pins
+  pinMode(redLightPin, OUTPUT);
+  pinMode(greenLightPin, OUTPUT);
+  digitalWrite(redLightPin, LOW);
+  digitalWrite(greenLightPin, LOW);
+
+}
+
+void loop() {
+  //servo movement function
+  servoMovement();
+}
+
